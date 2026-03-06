@@ -82,10 +82,17 @@ daily-hikmah/
 
 **API Endpoints:**
 ```
-POST   /subscribe          - Subscribe with frequency preference
-GET    /vapid-public-key   - Get VAPID public key for frontend
-GET    /today              - Get current wisdom saying
-GET    /health             - Health check endpoint
+# Primary endpoints (recommended for production)
+POST   /api/subscribe          - Subscribe with frequency preference (6h/12h/24h)
+GET    /api/vapid-public-key   - Get VAPID public key for frontend
+GET    /api/hikmah             - Get current wisdom saying
+GET    /api/health             - Health check endpoint (returns subscriber count)
+
+# Legacy endpoints (backwards compatibility)
+POST   /subscribe              - Same as /api/subscribe
+GET    /vapid-public-key       - Same as /api/vapid-public-key
+GET    /today                  - Same as /api/hikmah
+GET    /health                 - Same as /api/health
 ```
 
 **Data Flow:**

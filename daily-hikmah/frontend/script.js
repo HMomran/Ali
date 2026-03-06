@@ -2,14 +2,22 @@
 // Configuration
 // ====================================
 
-// IMPORTANT: Change this to your Render backend URL before deploying to Vercel
-// For local development: Same origin (served by backend)
-// For production on Vercel: https://your-app-name.onrender.com
-const API_URL = window.location.hostname === 'localhost' 
-  ? '' // Empty string = same origin for local dev
-  : 'https://YOUR_RENDER_BACKEND_URL_HERE.onrender.com';
+// IMPORTANT: Update RENDER_BACKEND_URL before deploying to Vercel
+// Get your Render backend URL from: https://dashboard.render.com
+// Example: 'https://daily-hikmah-backend.onrender.com'
+const RENDER_BACKEND_URL = 'https://YOUR_APP_NAME.onrender.com'; // ⚠️ UPDATE THIS!
 
-console.log('🌐 API URL:', API_URL || 'Same origin (localhost)');
+// Auto-detect environment: localhost uses same-origin, production uses Render
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? '' // Empty string = same origin for local dev (backend serves frontend)
+  : RENDER_BACKEND_URL; // Production: Vercel frontend → Render backend
+
+console.log('🌐 Environment:', window.location.hostname);
+console.log('🔗 API URL:', API_URL || 'Same origin (localhost)');
+
+if (API_URL.includes('YOUR_APP_NAME')) {
+  console.error('⚠️ WARNING: Update RENDER_BACKEND_URL in script.js before deploying to Vercel!');
+}
 
 // ====================================
 // DOM Elements
@@ -66,30 +74,39 @@ function getSelectedFrequency() {
 // Load today's wisdom from backend
 async function loadTodaysWisdom() {
   try {
-    const response = await fetch(API_URL + "/today");
+    const response = await fetch(API_URL + "/api/hikmah");
     if (!response.ok) {
-      throw new Error("Failed to fetch wisdom");
+      throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
     }
     const data = await response.json();
-    wisdomEl.textContent = data.message;
+    wisdomEl.textContent = data.message || data.body || "لا توجد حكمة متاحة";
+    console.log("✅ Hikmah loaded successfully");
   } catch (error) {
-    console.error("Failed to load wisdom:", error);
-    wisdomEl.textContent = "فشل تحميل الحكمة. يرجى تحديث الصفحة.";
+    console.error("❌ Failed to load hikmah:", error);
+    wisdomEl.textContent = "فشل الاتصال بالخادم. يرجى التحقق من الاتصال بالإنترنت.";
+    
+    // Show detailed error in console for debugging
+    if (API_URL.includes('YOUR_APP_NAME')) {
+      console.error("⚠️ API_URL not configured! Update RENDER_BACKEND_URL in script.js");
+    }
   }
 }
 
 // Fetch VAPID public key from server
 async function getVAPIDPublicKey() {
   try {
-    const response = await fetch(API_URL + "/vapid-public-key");
+    const response = await fetch(API_URL + "/api/vapid-public-key");
     if (!response.ok) {
-      throw new Error("Failed to fetch VAPID key");
+      throw new Error(`Failed to fetch VAPID key: ${response.status}`);
     }
     const data = await response.json();
+    if (!data.publicKey) {
+      throw new Error("Server did not return a valid VAPID public key");
+    }
     return data.publicKey;
   } catch (error) {
-    console.error("Failed to fetch VAPID key:", error);
-    throw new Error("Failed to get server public key. Please check if backend is running.");
+    console.error("❌ Failed to fetch VAPID key:", error);
+    throw new Error("فشل الاتصال بالخادم. تأكد من تشغيل الخادم الخلفي.");
   }
 }
 
@@ -141,7 +158,7 @@ async function subscribeToPush() {
     // Get VAPID public key
     if (!vapidPublicKey) {
       vapidPublicKey = await getVAPIDPublicKey();
-      console.log("🔑 VAPID key received");
+      console.log("🔑 VAPID key received:", vapidPublicKey.substring(0, 20) + "...");
     }
 
     // Register service worker
@@ -156,7 +173,7 @@ async function subscribeToPush() {
     console.log("📬 Push subscription created:", subscription);
 
     // Send subscription to server with frequency preference
-    const response = await fetch(API_URL + "/subscribe", {
+    const response = await fetch(API_URL + "/api/subscribe", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

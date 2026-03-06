@@ -363,23 +363,38 @@ func vapidPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Handler for GET /today
+// Handler for GET /today and /api/hikmah
 func todayHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(Notification{
+	response := Notification{
 		Title:   "حكمة اليوم",
 		Message: getCurrentWisdom(),
-	})
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("❌ Error encoding hikmah response: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("📖 Served hikmah to %s", r.RemoteAddr)
 }
 
-// Handler for GET /health (for Render health checks)
+// Handler for GET /health and /api/health (for Render health checks)
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	response := map[string]interface{}{
 		"status":      "ok",
 		"subscribers": subStore.Count(),
 		"sayings":     len(sayings),
-	})
+		"version":     "1.0.0",
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("❌ Error encoding health response: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }
 
 func main() {
@@ -400,10 +415,18 @@ func main() {
 	go notificationScheduler()
 
 	// Setup HTTP routes with CORS
-	http.HandleFunc("/subscribe", corsMiddleware(subscribeHandler))
-	http.HandleFunc("/vapid-public-key", corsMiddleware(vapidPublicKeyHandler))
-	http.HandleFunc("/today", corsMiddleware(todayHandler))
-	http.HandleFunc("/health", corsMiddleware(healthHandler))
+	// Support both /api/* and direct /* endpoints for flexibility
+	http.HandleFunc("/api/subscribe", corsMiddleware(subscribeHandler))
+	http.HandleFunc("/subscribe", corsMiddleware(subscribeHandler)) // Backwards compatibility
+
+	http.HandleFunc("/api/vapid-public-key", corsMiddleware(vapidPublicKeyHandler))
+	http.HandleFunc("/vapid-public-key", corsMiddleware(vapidPublicKeyHandler)) // Backwards compatibility
+
+	http.HandleFunc("/api/hikmah", corsMiddleware(todayHandler))
+	http.HandleFunc("/today", corsMiddleware(todayHandler)) // Backwards compatibility
+
+	http.HandleFunc("/api/health", corsMiddleware(healthHandler))
+	http.HandleFunc("/health", corsMiddleware(healthHandler)) // Backwards compatibility
 
 	// Serve static files (for local development)
 	// In production, frontend will be on Vercel
@@ -426,12 +449,13 @@ func main() {
 
 	log.Printf("✅ Server starting on port %s", port)
 	log.Printf("📡 API endpoints:")
-	log.Printf("   POST   /subscribe")
-	log.Printf("   GET    /vapid-public-key")
-	log.Printf("   GET    /today")
-	log.Printf("   GET    /health")
+	log.Printf("   POST   /api/subscribe     (also: /subscribe)")
+	log.Printf("   GET    /api/vapid-public-key     (also: /vapid-public-key)")
+	log.Printf("   GET    /api/hikmah       (also: /today)")
+	log.Printf("   GET    /api/health       (also: /health)")
 	log.Println()
 	log.Printf("🌐 Backend ready for production deployment")
+	log.Printf("💡 Use /api/* endpoints for production, /* for backwards compatibility")
 
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatalf("❌ Server failed: %v", err)
