@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Hikmah / حكمة اليوم</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>حكمة اليوم</h1>
+    <p class="subtitle">اشترك واستقبل حكمة يومية حتى لو كان المتصفح مغلقاً</p>
+
+    <section class="card">
+      <h2>حكمة اليوم</h2>
+      <p id="wisdomText" class="wisdom">جاري التحميل...</p>
+    </section>
+
+    <!-- Frequency Selection Section -->
+    <section class="frequency-section" id="frequencySection">
+      <h3>اختر عدد مرات استلام الحكمة</h3>
+      <p class="frequency-description">اختر كم مرة تريد استقبال الحكمة يومياً:</p>
+      
+      <div class="frequency-options">
+        <label class="frequency-option">
+          <input type="radio" name="frequency" value="6">
+          <span class="frequency-label">
+            <span class="frequency-title">كل 6 ساعات</span>
+            <span class="frequency-subtitle">4 مرات يومياً</span>
+          </span>
+        </label>
+
+        <label class="frequency-option">
+          <input type="radio" name="frequency" value="12">
+          <span class="frequency-label">
+            <span class="frequency-title">كل 12 ساعة</span>
+            <span class="frequency-subtitle">مرتين يومياً</span>
+          </span>
+        </label>
+
+        <label class="frequency-option recommended">
+          <input type="radio" name="frequency" value="24" checked>
+          <span class="frequency-label">
+            <span class="frequency-title">كل 24 ساعة</span>
+            <span class="frequency-subtitle">مرة واحدة يومياً (موصى به)</span>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <section class="actions">
+      <button id="subscribeBtn" class="btn-primary">
+        <span id="btnText">اشترك الآن</span>
+      </button>
+      <button id="unsubscribeBtn" class="btn-secondary" style="display: none;">
+        <span id="unsubBtnText">إلغاء الاشتراك</span>
+      </button>
+      <p id="status" class="status"></p>
+    </section>
+
+    <!-- Instructions -->
+    <section class="info" id="infoSection">
+      <h3>كيف يعمل؟</h3>
+      <ul>
+        <li>اختر عدد المرات التي تريد استقبال الحكمة فيها</li>
+        <li>اضغط على زر "اشترك الآن"</li>
+        <li>اسمح بإرسال الإشعارات عند طلبها من المتصفح</li>
+        <li>ستستقبل الحكمة حسب التكرار الذي اخترته</li>
+        <li>الإشعارات تصلك حتى لو كان المتصفح مغلقاً ✅</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+/* style.css */
+:root {
+  --primary-color: #2c5530;      /* Deep green, inspired by Islamic art */
+  --primary-dark: #1e3b21;
+  --secondary-color: #c7a23b;    /* Warm gold, for accents */
+  --bg-color: #f9f7f2;           /* Soft cream background */
+  --card-bg: #ffffff;
+  --text-dark: #2d3e2d;
+  --text-soft: #5a5a5a;
+  --border-light: #e2e0d9;
+  --shadow-sm: 0 4px 12px rgba(0, 20, 0, 0.08);
+  --shadow-md: 0 8px 24px rgba(0, 30, 0, 0.1);
+  --font-main: 'Segoe UI', 'Amiri', 'Tahoma', 'Arial', sans-serif;
+  --border-radius: 28px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  line-height: 1.6;
+  direction: rtl;                 /* Arabic RTL layout */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-image: radial-gradient(circle at 10% 20%, rgba(44, 85, 48, 0.03) 0%, transparent 30%),
+                    radial-gradient(circle at 90% 80%, rgba(199, 162, 59, 0.03) 0%, transparent 30%);
+}
+
+.container {
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 2.6rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 0.2rem;
+  letter-spacing: -0.5px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.02);
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-soft);
+  margin-bottom: 2.5rem;
+  border-bottom: 2px solid var(--secondary-color);
+  display: inline-block;
+  padding-bottom: 0.4rem;
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+  display: table;
+}
+
+/* Card style */
+.card {
+  background: var(--card-bg);
+  padding: 2rem 2.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-light);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card h2 {
+  font-size: 1.8rem;
+  color: var(--primary-dark);
+  margin-bottom: 1.2rem;
+  font-weight: 500;
+  border-bottom: 2px dashed var(--secondary-color);
+  display: inline-block;
+  padding-bottom: 0.4rem;
+}
+
+.wisdom {
+  font-size: 1.7rem;
+  line-height: 1.8;
+  color: #1e3b21;
+  font-weight: 450;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(199, 162, 59, 0.04);
+  padding: 1.5rem;
+  border-radius: 20px;
+  border-right: 4px solid var(--secondary-color);
+  word-break: break-word;
+  font-family: 'Amiri', 'Segoe UI', serif;
+}
+
+/* Frequency section */
+.frequency-section {
+  background: var(--card-bg);
+  padding: 1.8rem 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-light);
+}
+
+.frequency-section h3 {
+  font-size: 1.4rem;
+  color: var(--primary-dark);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.frequency-description {
+  color: var(--text-soft);
+  margin-bottom: 1.8rem;
+  font-size: 1rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px dotted var(--border-light);
+}
+
+.frequency-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.frequency-option {
+  display: flex;
+  align-items: center;
+  background: #f9f9f5;
+  border-radius: 50px;
+  padding: 0.6rem 1.5rem;
+  border: 1.5px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.frequency-option:hover {
+  border-color: var(--primary-color);
+  background: #f0f3eb;
+  transform: translateY(-2px);
+}
+
+.frequency-option.recommended {
+  background: #fff9e6;
+  border-color: var(--secondary-color);
+}
+
+.frequency-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #aaa;
+  border-radius: 50%;
+  margin-left: 1.2rem;
+  position: relative;
+  transition: 0.1s;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.frequency-option input[type="radio"]:checked {
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
+  box-shadow: inset 0 0 0 5px white, 0 0 0 1px var(--primary-color);
+}
+
+.frequency-option.recommended input[type="radio"]:checked {
+  border-color: var(--secondary-color);
+  background-color: var(--secondary-color);
+}
+
+.frequency-label {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.frequency-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--text-dark);
+}
+
+.frequency-subtitle {
+  font-size: 0.9rem;
+  color: #6d6d6d;
+}
+
+.recommended .frequency-title {
+  color: #a8872a;
+}
+
+.recommended .frequency-subtitle {
+  color: #8b7a4a;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 2rem 0 1.5rem;
+}
+
+.btn-primary, .btn-secondary {
+  border: none;
+  padding: 1rem 2.8rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+  min-width: 240px;
+  box-shadow: var(--shadow-sm);
+  font-family: var(--font-main);
+  letter-spacing: 0.3px;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+  border: 1px solid var(--primary-dark);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: scale(1.03);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: white;
+  color: #a13e3e;
+  border: 1.5px solid #dbb;
+  display: none;                  /* hidden by default, shown via JS */
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+  background: #fff3f3;
+  border-color: #b88;
+  color: #8b2e2e;
+}
+
+.status {
+  font-size: 1rem;
+  color: var(--primary-dark);
+  background: #e9f0e4;
+  padding: 0.6rem 1.8rem;
+  border-radius: 50px;
+  min-height: 3rem;
+  text-align: center;
+  border-right: 3px solid var(--secondary-color);
+  max-width: 100%;
+  word-break: break-word;
+}
+
+/* Info section */
+.info {
+  background: rgba(44, 85, 48, 0.02);
+  padding: 1.8rem 2rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-light);
+  margin-top: 1.8rem;
+}
+
+.info h3 {
+  font-size: 1.3rem;
+  color: var(--primary-dark);
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.info ul {
+  list-style-type: none;
+  padding-right: 0.5rem;
+}
+
+.info li {
+  margin-bottom: 0.8rem;
+  padding-right: 2rem;
+  position: relative;
+  color: #3f4a3f;
+}
+
+.info li::before {
+  content: "✓";
+  color: var(--primary-color);
+  font-weight: bold;
+  position: absolute;
+  right: 0;
+  font-size: 1.2rem;
+}
+
+/* Buttons and text for unsubscribe */
+#unsubscribeBtn {
+  display: none;  /* initial hidden */
+}
+
+/* Responsive */
+@media (max-width: 550px) {
+  body {
+    padding: 0.8rem;
+  }
+  
+  h1 {
+    font-size: 2.2rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .card {
+    padding: 1.5rem 1.2rem;
+  }
+  
+  .wisdom {
+    font-size: 1.4rem;
+    padding: 1rem;
+  }
+  
+  .frequency-option {
+    padding: 0.6rem 1rem;
+  }
+  
+  .frequency-title {
+    font-size: 1.1rem;
+  }
+  
+  .btn-primary, .btn-secondary {
+    min-width: 200px;
+    font-size: 1.2rem;
+    padding: 0.9rem 1.8rem;
+  }
+  
+  .info li {
+    font-size: 0.95rem;
+  }
+}
+
+/* Subtle animation for loading/wisdom change */
+@keyframes gentlePulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+#wisdomText.loading {
+  animation: gentlePulse 1.2s infinite;
+  color: #777;
+}
+
+/* For the optional frequency section, consistent spacing */
+.frequency-section + .actions {
+  margin-top: -0.5rem;
+}

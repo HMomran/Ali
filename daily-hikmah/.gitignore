@@ -1,0 +1,48 @@
+# Environment variables
+.env
+.env.local
+.env.production
+
+# VAPID keys (NEVER commit these!)
+vapid_keys.json
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Binaries
+app
+main
+daily-hikmah
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node (if you add any build tools later)
+node_modules/
+dist/
+.cache/
+
+# Vercel
+.vercel
+
+# Build artifacts
+build/
+tmp/
