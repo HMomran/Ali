@@ -5,11 +5,15 @@
 // IMPORTANT: Update RENDER_BACKEND_URL before deploying to Vercel
 // Get your Render backend URL from: https://dashboard.render.com
 // Example: 'https://daily-hikmah-backend.onrender.com'
-const RENDER_BACKEND_URL = 'https://YOUR_APP_NAME.onrender.com'; // ⚠️ UPDATE THIS!
+const RENDER_BACKEND_URL = 'https://daily-hikmah-backend.onrender.com'; // ✅ UPDATED!
 
-// Auto-detect environment: localhost uses same-origin, production uses Render
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? '' // Empty string = same origin for local dev (backend serves frontend)
+// Auto-detect environment: 
+// - localhost OR onrender.com (backend serves frontend) → use same origin (empty string)
+// - Vercel deployment → use RENDER_BACKEND_URL
+const API_URL = window.location.hostname === 'localhost' 
+  || window.location.hostname === '127.0.0.1'
+  || window.location.hostname.includes('onrender.com')
+  ? '' // Empty string = same origin (backend serves frontend)
   : RENDER_BACKEND_URL; // Production: Vercel frontend → Render backend
 
 console.log('🌐 Environment:', window.location.hostname);
