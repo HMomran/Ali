@@ -35,8 +35,11 @@ const statusEl = document.getElementById("status");
 const wisdomEl = document.getElementById("wisdomText");
 const frequencySection = document.getElementById("frequencySection");
 const infoSection = document.getElementById("infoSection");
+const countdownEl = document.getElementById("countdown");
 
 let vapidPublicKey = null;
+let nextRotationTime = null;
+let countdownInterval = null;
 
 // ====================================
 // Utility Functions
@@ -60,6 +63,18 @@ function urlBase64ToUint8Array(base64String) {
 
 // Update status message
 function updateStatus(message, isError = false) {
+    statusEl.style.cssText = `
+        font-size: 1rem;
+        color: var(--primary-dark);
+        background: #e9f0e4;
+        padding: 0.6rem 1.8rem;
+        border-radius: 50px;
+        min-height: 3rem;
+        text-align: center;
+        border-right: 3px solid var(--secondary-color);
+        max-width: 100%;
+        word-break: break-word;
+        `;
   statusEl.textContent = message;
   statusEl.className = isError ? "status error" : "status success";
   statusEl.style.display = "block";
@@ -84,6 +99,13 @@ async function loadTodaysWisdom() {
     }
     const data = await response.json();
     wisdomEl.textContent = data.message || data.body || "لا توجد حكمة متاحة";
+    
+    // Store next rotation time
+    if (data.nextRotation) {
+      nextRotationTime = data.nextRotation * 1000; // Convert to milliseconds
+      startCountdown();
+    }
+    
     console.log("✅ Hikmah loaded successfully");
   } catch (error) {
     console.error("❌ Failed to load hikmah:", error);
@@ -201,6 +223,7 @@ async function subscribeToPush() {
     subscribeBtn.classList.add("subscribed");
     subscribeBtn.style.display = "none";
     unsubscribeBtn.style.display = "inline-block";
+
     
     const frequencyText = frequency === 1 ? "كل دقيقة (للتجربة)" 
       : frequency === 6 ? "كل 6 ساعات" 
@@ -323,13 +346,55 @@ unsubscribeBtn.addEventListener("click", unsubscribeFromPush);
 // Auto-Refresh Hikmah
 // ====================================
 
-// Auto-refresh hikmah every hour
+// Countdown timer for next hikmah rotation
+function startCountdown() {
+  // Clear existing interval
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+  }
+
+  function updateCountdown() {
+    if (!nextRotationTime) return;
+
+    const now = Date.now();
+    const timeLeft = nextRotationTime - now;
+
+    if (timeLeft <= 0) {
+      // Time's up! Load new hikmah
+      countdownEl.textContent = "جاري التحديث...";
+      loadTodaysWisdom();
+      return;
+    }
+
+    // Calculate hours, minutes, seconds
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    // Format as HH:MM:SS
+    const hoursStr = String(hours).padStart(2, '0');
+    const minutesStr = String(minutes).padStart(2, '0');
+    const secondsStr = String(seconds).padStart(2, '0');
+
+    countdownEl.textContent = `⏰ الحكمة التالية خلال: ${hoursStr}:${minutesStr}:${secondsStr}`;
+  }
+
+  // Update immediately
+  updateCountdown();
+
+  // Update every second
+  countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+// Auto-refresh hikmah every minute to check for changes
 function startAutoRefresh() {
-  // Refresh every hour (3600000 ms)
+  // Check every minute if it's time to refresh
   setInterval(() => {
-    console.log("🔄 Auto-refreshing hikmah...");
-    loadTodaysWisdom();
-  }, 3600000); // 1 hour
+    if (nextRotationTime && Date.now() >= nextRotationTime) {
+      console.log("🔄 Auto-refreshing hikmah...");
+      loadTodaysWisdom();
+    }
+  }, 60000); // Check every minute
 }
 
 // ====================================

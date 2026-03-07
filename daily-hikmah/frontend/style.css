@@ -267,18 +267,7 @@ h1 {
   color: #8b2e2e;
 }
 
-.status {
-  font-size: 1rem;
-  color: var(--primary-dark);
-  background: #e9f0e4;
-  padding: 0.6rem 1.8rem;
-  border-radius: 50px;
-  min-height: 3rem;
-  text-align: center;
-  border-right: 3px solid var(--secondary-color);
-  max-width: 100%;
-  word-break: break-word;
-}
+
 
 /* Info section */
 .info {

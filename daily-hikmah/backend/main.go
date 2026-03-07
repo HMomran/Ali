@@ -109,6 +109,8 @@ var (
 	sayings         []string
 	sayingCounter   int
 	counterMutex    sync.Mutex
+	lastRotation    time.Time // Track when hikmah was last rotated
+	rotationMutex   sync.RWMutex
 )
 
 // getVAPIDKeys loads VAPID keys from environment variables or generates new ones
@@ -179,6 +181,29 @@ func getCurrentWisdom() string {
 	return sayings[sayingCounter%len(sayings)]
 }
 
+// rotateWisdomIfNeeded checks if hikmah should rotate (every hour) and rotates it
+func rotateWisdomIfNeeded() {
+	rotationMutex.Lock()
+	defer rotationMutex.Unlock()
+
+	now := time.Now()
+	// If more than 1 hour has passed since last rotation, rotate
+	if now.Sub(lastRotation) >= 1*time.Hour {
+		counterMutex.Lock()
+		sayingCounter++
+		counterMutex.Unlock()
+		lastRotation = now
+		log.Printf("🔄 Hikmah rotated to #%d", sayingCounter%len(sayings)+1)
+	}
+}
+
+// getNextRotationTime returns when the next hikmah rotation will happen
+func getNextRotationTime() time.Time {
+	rotationMutex.RLock()
+	defer rotationMutex.RUnlock()
+	return lastRotation.Add(1 * time.Hour)
+}
+
 // sendPushNotification sends a Web Push notification to a subscriber
 func sendPushNotification(sub *Subscriber, notif Notification) error {
 	payload, err := json.Marshal(notif)
@@ -245,7 +270,7 @@ func notificationScheduler() {
 		for _, sub := range subscribers {
 			// Calculate time since last notification
 			timeSince := now.Sub(sub.LastSent)
-			
+
 			// Frequency: 1 = 1 minute (testing), others = hours
 			var frequencyDuration time.Duration
 			if sub.Frequency == 1 {
@@ -372,10 +397,15 @@ func vapidPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 
 // Handler for GET /today and /api/hikmah
 func todayHandler(w http.ResponseWriter, r *http.Request) {
+	// Check if hikmah needs rotation before serving
+	rotateWisdomIfNeeded()
+
 	w.Header().Set("Content-Type", "application/json")
-	response := Notification{
-		Title:   "حكمة اليوم",
-		Message: getCurrentWisdom(),
+	nextRotation := getNextRotationTime()
+	response := map[string]interface{}{
+		"title":        "حكمة اليوم",
+		"message":      getCurrentWisdom(),
+		"nextRotation": nextRotation.Unix(), // Unix timestamp for frontend
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -417,6 +447,10 @@ func main() {
 	if err := loadSayings(sayingsFile); err != nil {
 		log.Fatalf("❌ Failed to load sayings: %v", err)
 	}
+
+	// Initialize rotation time
+	lastRotation = time.Now()
+	log.Printf("⏰ Hikmah rotation initialized. Next rotation at: %s", lastRotation.Add(1*time.Hour).Format("15:04:05"))
 
 	// Start notification scheduler in background
 	go notificationScheduler()
