@@ -336,9 +336,30 @@ function startAutoRefresh() {
 // Initialization
 // ====================================
 
+// Style the testing option (1-minute frequency)
+function styleTestingOption() {
+  const testingOption = document.getElementById('testingOption');
+  const testingTitle = testingOption?.querySelector('.frequency-title');
+  
+  if (testingOption) {
+    // Orange border and background for testing option
+    testingOption.style.borderColor = '#ff9800';
+    testingOption.style.background = 'rgba(255, 152, 0, 0.1)';
+  }
+  
+  if (testingTitle) {
+    // Orange text for the title
+    testingTitle.style.color = '#ff9800';
+  }
+}
+
 // Load wisdom and check subscription status on page load
 document.addEventListener("DOMContentLoaded", () => {
   console.log("🚀 Daily Hikmah app initialized");
+  
+  // Apply styling to testing option
+  styleTestingOption();
+  
   loadTodaysWisdom();
   checkSubscription();
   startAutoRefresh();
