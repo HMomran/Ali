@@ -397,7 +397,11 @@ function startPersonalCountdown() {
     const timeLeft = nextNotification - now;
 
     if (timeLeft <= 0) {
-      // Time's up! Update last notification time and reset
+      // Time's up! Clear the current interval first
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+      
+      // Update last notification time
       const updatedData = {
         ...subscription,
         lastNotification: now
@@ -409,7 +413,7 @@ function startPersonalCountdown() {
       // Reload hikmah
       loadTodaysWisdom();
       
-      // Restart countdown
+      // Restart countdown with fresh data
       setTimeout(() => startPersonalCountdown(), 2000);
       return;
     }

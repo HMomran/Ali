@@ -181,14 +181,14 @@ func getCurrentWisdom() string {
 	return sayings[sayingCounter%len(sayings)]
 }
 
-// rotateWisdomIfNeeded checks if hikmah should rotate (every hour) and rotates it
+// rotateWisdomIfNeeded checks if hikmah should rotate (every minute for testing) and rotates it
 func rotateWisdomIfNeeded() {
 	rotationMutex.Lock()
 	defer rotationMutex.Unlock()
 
 	now := time.Now()
-	// If more than 1 hour has passed since last rotation, rotate
-	if now.Sub(lastRotation) >= 1*time.Hour {
+	// If more than 1 minute has passed since last rotation, rotate (for testing)
+	if now.Sub(lastRotation) >= 1*time.Minute {
 		counterMutex.Lock()
 		sayingCounter++
 		counterMutex.Unlock()
@@ -201,7 +201,7 @@ func rotateWisdomIfNeeded() {
 func getNextRotationTime() time.Time {
 	rotationMutex.RLock()
 	defer rotationMutex.RUnlock()
-	return lastRotation.Add(1 * time.Hour)
+	return lastRotation.Add(1 * time.Minute)
 }
 
 // sendPushNotification sends a Web Push notification to a subscriber
