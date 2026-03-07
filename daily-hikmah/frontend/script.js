@@ -38,7 +38,6 @@ const infoSection = document.getElementById("infoSection");
 const countdownEl = document.getElementById("countdown");
 
 let vapidPublicKey = null;
-let nextRotationTime = null;
 let countdownInterval = null;
 
 // ====================================
@@ -99,12 +98,6 @@ async function loadTodaysWisdom() {
     }
     const data = await response.json();
     wisdomEl.textContent = data.message || data.body || "لا توجد حكمة متاحة";
-    
-    // Store next rotation time
-    if (data.nextRotation) {
-      nextRotationTime = data.nextRotation * 1000; // Convert to milliseconds
-      startCountdown();
-    }
     
     console.log("✅ Hikmah loaded successfully");
   } catch (error) {
@@ -218,6 +211,14 @@ async function subscribeToPush() {
     const result = await response.json();
     console.log("✅ Subscription saved:", result);
 
+    // Store subscription details in localStorage for countdown
+    const subscriptionData = {
+      frequency: frequency,
+      subscribedAt: Date.now(),
+      lastNotification: Date.now() // First notification sent immediately
+    };
+    localStorage.setItem('hikmahSubscription', JSON.stringify(subscriptionData));
+
     // Update UI
     btnText.textContent = "✓ مشترك";
     subscribeBtn.classList.add("subscribed");
@@ -230,6 +231,9 @@ async function subscribeToPush() {
       : frequency === 12 ? "كل 12 ساعة" 
       : "كل 24 ساعة";
     updateStatus(`تم الاشتراك! ستستقبل حكمة ${frequencyText} 🎉`);
+
+    // Start personal countdown based on user's frequency
+    startPersonalCountdown();
 
     // Hide frequency selection and instructions
     if (frequencySection) frequencySection.style.display = "none";
@@ -272,6 +276,9 @@ async function checkSubscription() {
       if (frequencySection) frequencySection.style.display = "none";
       if (infoSection) infoSection.style.display = "none";
       document.querySelector(".subtitle").style.display = "none";
+      
+      // Start personal countdown if subscription data exists
+      startPersonalCountdown();
       
       return true;
     }
@@ -317,6 +324,18 @@ async function unsubscribeFromPush() {
     btnText.textContent = "اشترك الآن";
     updateStatus("تم إلغاء الاشتراك بنجاح");
 
+    // Clear localStorage
+    localStorage.removeItem('hikmahSubscription');
+    
+    // Stop countdown
+    if (countdownInterval) {
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+    if (countdownEl) {
+      countdownEl.textContent = '';
+    }
+
     // Show frequency selection and instructions again
     if (frequencySection) frequencySection.style.display = "block";
     if (infoSection) infoSection.style.display = "block";
@@ -346,23 +365,52 @@ unsubscribeBtn.addEventListener("click", unsubscribeFromPush);
 // Auto-Refresh Hikmah
 // ====================================
 
-// Countdown timer for next hikmah rotation
-function startCountdown() {
+// Personal countdown based on user's chosen frequency
+function startPersonalCountdown() {
+  // Get subscription data fromlocal storage
+  const subData = localStorage.getItem('hikmahSubscription');
+  if (!subData) {
+    console.log('⚠️ No subscription data found for countdown');
+    return;
+  }
+
+  const subscription = JSON.parse(subData);
+  const { frequency, lastNotification } = subscription;
+
   // Clear existing interval
   if (countdownInterval) {
     clearInterval(countdownInterval);
   }
 
   function updateCountdown() {
-    if (!nextRotationTime) return;
-
     const now = Date.now();
-    const timeLeft = nextRotationTime - now;
+    
+    // Calculate next notification time based on frequency
+    let frequencyMs;
+    if (frequency === 1) {
+      frequencyMs = 1 * 60 * 1000; // 1 minute
+    } else {
+      frequencyMs = frequency * 60 * 60 * 1000; // hours to milliseconds
+    }
+    
+    const nextNotification = lastNotification + frequencyMs;
+    const timeLeft = nextNotification - now;
 
     if (timeLeft <= 0) {
-      // Time's up! Load new hikmah
-      countdownEl.textContent = "جاري التحديث...";
+      // Time's up! Update last notification time and reset
+      const updatedData = {
+        ...subscription,
+        lastNotification: now
+      };
+      localStorage.setItem('hikmahSubscription', JSON.stringify(updatedData));
+      
+      countdownEl.textContent = "🔔 حان موعد الإشعار!";
+      
+      // Reload hikmah
       loadTodaysWisdom();
+      
+      // Restart countdown
+      setTimeout(() => startPersonalCountdown(), 2000);
       return;
     }
 
@@ -371,12 +419,26 @@ function startCountdown() {
     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
 
-    // Format as HH:MM:SS
-    const hoursStr = String(hours).padStart(2, '0');
-    const minutesStr = String(minutes).padStart(2, '0');
-    const secondsStr = String(seconds).padStart(2, '0');
+    // Format display based on frequency
+    let displayText;
+    if (frequency === 1) {
+      // For 1 minute, show only seconds if less than 1 minute
+      if (hours === 0 && minutes === 0) {
+        displayText = `⏰ الإشعار التالي خلال: ${seconds} ثانية`;
+      } else {
+        const minutesStr = String(minutes).padStart(2, '0');
+        const secondsStr = String(seconds).padStart(2, '0');
+        displayText = `⏰ الإشعار التالي خلال: ${minutesStr}:${secondsStr}`;
+      }
+    } else {
+      // For hours, show full HH:MM:SS
+      const hoursStr = String(hours).padStart(2, '0');
+      const minutesStr = String(minutes).padStart(2, '0');
+      const secondsStr = String(seconds).padStart(2, '0');
+      displayText = `⏰ الإشعار التالي خلال: ${hoursStr}:${minutesStr}:${secondsStr}`;
+    }
 
-    countdownEl.textContent = `⏰ الحكمة التالية خلال: ${hoursStr}:${minutesStr}:${secondsStr}`;
+    countdownEl.textContent = displayText;
   }
 
   // Update immediately
@@ -386,15 +448,30 @@ function startCountdown() {
   countdownInterval = setInterval(updateCountdown, 1000);
 }
 
-// Auto-refresh hikmah every minute to check for changes
+// Auto-refresh hikmah periodically
 function startAutoRefresh() {
-  // Check every minute if it's time to refresh
+  // Check every 10 seconds if it's time to refresh based on countdown
   setInterval(() => {
-    if (nextRotationTime && Date.now() >= nextRotationTime) {
-      console.log("🔄 Auto-refreshing hikmah...");
-      loadTodaysWisdom();
+    const subData = localStorage.getItem('hikmahSubscription');
+    if (subData) {
+      const subscription = JSON.parse(subData);
+      const { frequency, lastNotification } = subscription;
+      
+      let frequencyMs;
+      if (frequency === 1) {
+        frequencyMs = 1 * 60 * 1000; // 1 minute
+      } else {
+        frequencyMs = frequency * 60 * 60 * 1000;
+      }
+      
+      const nextNotification = lastNotification + frequencyMs;
+      
+      if (Date.now() >= nextNotification) {
+        console.log("🔄 Auto-refreshing hikmah based on frequency...");
+        loadTodaysWisdom();
+      }
     }
-  }, 60000); // Check every minute
+  }, 10000); // Check every 10 seconds
 }
 
 // ====================================
