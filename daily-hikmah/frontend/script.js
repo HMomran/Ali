@@ -202,7 +202,10 @@ async function subscribeToPush() {
     subscribeBtn.style.display = "none";
     unsubscribeBtn.style.display = "inline-block";
     
-    const frequencyText = frequency === 6 ? "كل 6 ساعات" : frequency === 12 ? "كل 12 ساعة" : "كل 24 ساعة";
+    const frequencyText = frequency === 1 ? "كل دقيقة (للتجربة)" 
+      : frequency === 6 ? "كل 6 ساعات" 
+      : frequency === 12 ? "كل 12 ساعة" 
+      : "كل 24 ساعة";
     updateStatus(`تم الاشتراك! ستستقبل حكمة ${frequencyText} 🎉`);
 
     // Hide frequency selection and instructions

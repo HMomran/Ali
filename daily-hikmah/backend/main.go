@@ -222,11 +222,11 @@ func sendPushNotification(sub *Subscriber, notif Notification) error {
 
 // notificationScheduler continuously checks subscribers and sends notifications based on their frequency
 func notificationScheduler() {
-	// Check every hour
-	ticker := time.NewTicker(1 * time.Hour)
+	// Check every minute (allows testing with 1-minute frequency)
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
-	log.Println("🚀 Notification scheduler started (checking every hour)")
+	log.Println("🚀 Notification scheduler started (checking every minute)")
 
 	for {
 		<-ticker.C
@@ -245,7 +245,14 @@ func notificationScheduler() {
 		for _, sub := range subscribers {
 			// Calculate time since last notification
 			timeSince := now.Sub(sub.LastSent)
-			frequencyDuration := time.Duration(sub.Frequency) * time.Hour
+			
+			// Frequency: 1 = 1 minute (testing), others = hours
+			var frequencyDuration time.Duration
+			if sub.Frequency == 1 {
+				frequencyDuration = 1 * time.Minute // Testing mode
+			} else {
+				frequencyDuration = time.Duration(sub.Frequency) * time.Hour
+			}
 
 			// Check if it's time to send a notification
 			if timeSince >= frequencyDuration {
@@ -318,8 +325,8 @@ func subscribeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate frequency (must be 6, 12, or 24)
-	if req.Frequency != 6 && req.Frequency != 12 && req.Frequency != 24 {
+	// Validate frequency (1 minute for testing, or 6, 12, 24 hours)
+	if req.Frequency != 1 && req.Frequency != 6 && req.Frequency != 12 && req.Frequency != 24 {
 		log.Printf("⚠️  Invalid frequency %d, defaulting to 24 hours", req.Frequency)
 		req.Frequency = 24
 	}
